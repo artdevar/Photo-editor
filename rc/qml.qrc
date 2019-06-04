@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>BrightnessContrastSliders.qml</file>
+        <file>main.qml</file>
+        <file>MainMenuBar.qml</file>
+        <file>MainWindow.qml</file>
+        <file>MainText.qml</file>
+        <file>Histogram.qml</file>
+        <file>GaussianBlurSlider.qml</file>
+        <file>HueSaturationSliders.qml</file>
+    </qresource>
+</RCC>
