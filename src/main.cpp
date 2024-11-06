@@ -3,39 +3,32 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QApplication>
-#include "MainWindow.h"
-#include "ColorHistogram.h"
+#include "Editor.h"
+#include "ImageProvider.h"
 
-void registerTypes();
-void setContextProperties(QQmlApplicationEngine &, MainWindow *);
+void setContextProperties(QQmlApplicationEngine &, QEditor *);
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setApplicationName(QStringLiteral("Abode Photoshop CS24"));
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QQuickStyle::setStyle(QStringLiteral("Material"));
+  QCoreApplication::setApplicationName(QStringLiteral("Image editor"));
 
-    QApplication app(argc, argv);
-    registerTypes();
+  QApplication app(argc, argv);
 
-    MainWindow mainWindow;
+  QImageProvider * imageProvider = new QImageProvider; // engine frees memory
 
-    QQmlApplicationEngine engine;
-    engine.addImageProvider(QStringLiteral("imageProvider"), ImageHandler::instance());
-    setContextProperties(engine, &mainWindow);
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+  QQmlApplicationEngine engine;
+  engine.addImageProvider(QStringLiteral("provider"), imageProvider);
 
-    return app.exec();
+  QEditor editor(imageProvider);
+
+  setContextProperties(engine, &editor);
+  engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+  return app.exec();
 }
 
-void registerTypes()
+void setContextProperties(QQmlApplicationEngine & engine, QEditor * editor)
 {
-    qmlRegisterType<ColorHistogram>("viewmodels", 1, 0, "ColorHistogram");
-}
-
-void setContextProperties(QQmlApplicationEngine & engine, MainWindow * window_ptr)
-{
-    engine.rootContext()->setContextProperty("imageHandler",   ImageHandler::instance());
-    engine.rootContext()->setContextProperty("imageCorrector", ImageCorrector::instance());
-    engine.rootContext()->setContextProperty("mainWindow",     window_ptr);
+  engine.rootContext()->setContextProperty("editor",         editor);
+  engine.rootContext()->setContextProperty("imageProvider",  engine.imageProvider("provider"));
 }

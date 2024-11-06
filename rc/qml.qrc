@@ -8,5 +8,6 @@
         <file>Histogram.qml</file>
         <file>GaussianBlurSlider.qml</file>
         <file>HueSaturationSliders.qml</file>
+        <file>PopupWindow.qml</file>
     </qresource>
 </RCC>

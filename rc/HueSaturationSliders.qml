@@ -1,104 +1,100 @@
-import QtQuick 2.0
-import QtQuick.Controls 2.5
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Custom
 
-MainWindow {
-    id: root
-    title: qsTr("Adjust hue/saturation levels")
-    flags: Qt.Dialog | Qt.WindowMinMaxButtonsHint | Qt.WindowTitleHint | Qt.MSWindowsFixedSizeDialogHint
-    width: 400
-    height: 270
+PopupWindow {
+  id: root
+  title: qsTr("Adjust hue/saturation/lightness")
+  height: 220
 
-    property bool stateChanged: false
+  property var command: CommandChangeHueSaturationLight {
+    editorPtr: editor
+  }
 
-    function makeChanges(hue, sat, light) {
-        if (!root.stateChanged) {
-            mainWindow.saveState()
-            root.stateChanged = true
-        }
-        mainWindow.actionHueSaturation(hue, sat, light)
-    }
+  function onValuesChanged(hue, saturation, lightness) {
+    command.setHueSaturationLightness(hue, saturation, lightness)
+    editor.executeIntermediateCommand(command)
+  }
+
+  ColumnLayout {
+    anchors.fill: parent
+    spacing: -8
 
     MainText {
-        id: mainFont
-        font.pointSize: 11
+      id: hueText
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.topMargin: 7
+      text: qsTr("Hue: %1").arg(hueSlider.value)
+      color: "black"
+      font.pointSize: root.fontSize
     }
-
-    Column {
-        anchors {
-            fill: parent
-            topMargin: 10
-        }
-        spacing: 2
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Hue: %1").arg(hueSlider.value)
-            color: "white"
-            font: mainFont.font
-        }
-        Slider {
-            id: hueSlider
-            width: parent.width
-            from: 0
-            value: 0
-            to: 360
-            stepSize: 1
-            onValueChanged: makeChanges(hueSlider.value, saturationSlider.value, lightnessSlider.value)
-        }
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Saturation: %1").arg(saturationSlider.value)
-            color: "white"
-            font: mainFont.font
-        }
-        Slider {
-            id: saturationSlider
-            width: parent.width
-            from: -100
-            value: 0
-            to: 100
-            stepSize: 1
-            onValueChanged: makeChanges(hueSlider.value, saturationSlider.value, lightnessSlider.value)
-        }
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Lightness: %1").arg(lightnessSlider.value)
-            color: "white"
-            font: mainFont.font
-        }
-        Slider {
-            id: lightnessSlider
-            width: parent.width
-            from: -100
-            value: 0
-            to: 100
-            stepSize: 1
-            onValueChanged: makeChanges(hueSlider.value, saturationSlider.value, lightnessSlider.value)
-        }
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 30
-            Button {
-                flat: true
-                text: qsTr("OK")
-                font: mainFont.font
-                onClicked: {
-                    if (root.stateChanged) {
-                        mainWindow.applyChanges()
-                    }
-                    root.close()
-                }
-            }
-            Button {
-                flat: true
-                text: qsTr("CANCEL")
-                font: mainFont.font
-                onClicked: {
-                    if (root.stateChanged) {
-                        mainWindow.actionUndo()
-                    }
-                    root.close()
-                }
-            }
-        }
+    Slider {
+      id: hueSlider
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.preferredWidth: root.width * 0.8
+      from: 0
+      value: 0
+      to: 360
+      stepSize: 1
+      onValueChanged: root.onValuesChanged(hueSlider.value, saturationSlider.value, lightnessSlider.value)
     }
+    MainText {
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.topMargin: 7
+      text: qsTr("Saturation: %1").arg(saturationSlider.value)
+      color: "black"
+      font.pointSize: root.fontSize
+    }
+    Slider {
+      id: saturationSlider
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.preferredWidth: root.width * 0.8
+      from: -100
+      value: 0
+      to: 100
+      stepSize: 1
+      onValueChanged: root.onValuesChanged(hueSlider.value, saturationSlider.value, lightnessSlider.value)
+    }
+    MainText {
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.topMargin: 7
+      text: qsTr("Lightness: %1").arg(lightnessSlider.value)
+      color: "black"
+      font.pointSize: root.fontSize
+    }
+    Slider {
+      id: lightnessSlider
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+      Layout.preferredWidth: root.width * 0.8
+      from: -100
+      value: 0
+      to: 100
+      stepSize: 1
+      onValueChanged: root.onValuesChanged(hueSlider.value, saturationSlider.value, lightnessSlider.value)
+    }
+    RowLayout {
+      Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+      Layout.bottomMargin: 7
+      spacing: 30
+      Button {
+        text: qsTr("OK")
+        font: hueText.font
+        Layout.preferredWidth: cancelButton.width
+        onClicked: {
+          editor.onIntermediateCommandExecuted(command)
+          root.close()
+        }
+      }
+      Button {
+        id: cancelButton
+        text: qsTr("CANCEL")
+        font: hueText.font
+        onClicked: {
+          command.cancel()
+          root.close()
+        }
+      }
+    }
+  }
 }

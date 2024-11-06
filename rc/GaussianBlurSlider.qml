@@ -1,5 +1,5 @@
-import QtQuick 2.0
-import QtQuick.Controls 2.5
+import QtQuick
+import QtQuick.Controls
 
 MainWindow {
     id: root
@@ -13,10 +13,10 @@ MainWindow {
 
     function makeChanges(value) {
         if (!root.stateChanged) {
-            mainWindow.saveState()
+            editor.saveState()
             root.stateChanged = true
         }
-        mainWindow.actionGaussianBlur(value)
+        editor.actionGaussianBlur(value)
     }
 
     MainText {
@@ -54,7 +54,7 @@ MainWindow {
                 font: mainFont.font
                 onClicked: {
                     if (root.stateChanged) {
-                        mainWindow.applyChanges()
+                        editor.applyChanges()
                     }
                     root.close()
                 }
@@ -65,7 +65,7 @@ MainWindow {
                 font: mainFont.font
                 onClicked: {
                     if (root.stateChanged) {
-                        mainWindow.actionUndo()
+                        editor.actionUndo()
                     }
                     root.close()
                 }

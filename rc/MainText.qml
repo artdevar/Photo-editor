@@ -1,8 +1,6 @@
-import QtQuick 2.0
+import QtQuick
 
 Text {
-    color: "white"
-    font {
-        family: "SF Pro Text"
-    }
+  color: "white"
+  font.family: "SF Pro Text"
 }

@@ -1,59 +1,65 @@
 #include "ColorHistogram.h"
-#include "HistogramKeeper.h"
 #include <QBrush>
 #include <QPainter>
 #include <QTransform>
 
-ColorHistogram::ColorHistogram(QQuickItem * _parent_ptr) : QQuickPaintedItem(_parent_ptr)
+ColorHistogram::ColorHistogram(QQuickItem * parent) : QQuickPaintedItem(parent)
 {}
 
-void ColorHistogram::paint(QPainter * _painter_ptr)
+void ColorHistogram::paint(QPainter * painter)
 {
-    typedef std::unique_ptr<int32_t[]>(*Histogram)();
-    static const Histogram callbacks[] = {
-        &HistogramKeeper::histogramRGB,
-        &HistogramKeeper::histogramRed,
-        &HistogramKeeper::histogramGreen,
-        &HistogramKeeper::histogramBlue
-    };
+  const HistogramProvider::HistogramArray & histogram = m_Histograms.value(getChannel());
 
-    const auto histogram = (*callbacks[currentChannel])();
-    const auto arraySize = HistogramKeeper::HISTOGRAM_DATA_SIZE;
-    const auto maxItem   = *std::max_element(histogram.get(), histogram.get() + arraySize);
-    const auto point     = maxItem == 0 ? 1 : 1.0f / float(maxItem / histogramHeight);
+  const qsizetype histogramSize = histogram.size();
+  const int32_t   maxItem       = *std::max_element(histogram.cbegin(), histogram.cend());
+  const float     point         = maxItem == 0 ? 1.0f : 1.0f / float(maxItem / HISTOGRAM_HEIGHT);
 
-    QPolygon points;
-    points.reserve(arraySize + 3);
-    int x = 0;
-    for (int ix = 0, columnThickness = 2; ix < arraySize; ++ix, x += columnThickness)
-    {
-        points.push_back({x, (int32_t)(histogram[ix] * point)});
-    }
-    /* makes connect between last and first point */
-    points.push_back({x, (int32_t)(histogram[arraySize - 1] * point)});
-    points.push_back({x, 0});
-    points.push_back({0, 0});
-    /* ------------------------------------------ */
-    const QBrush brush(QColor(QStringLiteral("#D1D1D1")));
-    _painter_ptr->setBrush(brush);
-    _painter_ptr->setRenderHint(QPainter::Antialiasing);
-    _painter_ptr->setPen(Qt::NoPen);
-    _painter_ptr->translate(boundingRect().bottomLeft());
-    _painter_ptr->scale(1.0, -1.0);
-    _painter_ptr->drawPolygon(points);
+  QPolygon points;
+  points.reserve(histogramSize + 3);
+  int x = 0;
+  for (int ix = 0, columnThickness = 2; ix < histogramSize; ++ix, x += columnThickness)
+  {
+    points.push_back({x, (int32_t)(histogram[ix] * point)});
+  }
+  /* makes connect between last and first point */
+  points.push_back({x, (int32_t)(histogram[histogramSize - 1] * point)});
+  points.push_back({x, 0});
+  points.push_back({0, 0});
+
+  const QBrush brush(QColor(QStringLiteral("#D1D1D1")));
+  painter->setBrush(brush);
+  painter->setRenderHint(QPainter::Antialiasing);
+  painter->setPen(Qt::NoPen);
+  painter->translate(boundingRect().bottomLeft());
+  painter->scale(1.0, -1.0);
+  painter->drawPolygon(points);
 }
 
-ColorHistogram::ColorChannel ColorHistogram::channel() const
+ColorHistogram::ColorChannel ColorHistogram::getChannel() const
 {
-    return currentChannel;
+  return m_Channel;
 }
 
-void ColorHistogram::setChannel(int _channel)
+void ColorHistogram::setChannel(int channel)
 {
-    auto channel = static_cast<ColorHistogram::ColorChannel>(_channel);
-    if (channel != currentChannel)
-    {
-        currentChannel = channel;
-        emit channelChanged();
-    }
+  auto newChannel = static_cast<ColorHistogram::ColorChannel>(channel);
+  if (newChannel != m_Channel)
+  {
+    m_Channel = newChannel;
+    emit channelChanged();
+  }
+}
+
+void ColorHistogram::setImageData(const QVector<QRgb> & data)
+{
+  m_ImageData = data;
+  calculateHistograms();
+}
+
+void ColorHistogram::calculateHistograms()
+{
+  m_Histograms.insert(ColorChannel::RGB,   HistogramProvider::histogramRGB(m_ImageData));
+  m_Histograms.insert(ColorChannel::RED,   HistogramProvider::histogramRed(m_ImageData));
+  m_Histograms.insert(ColorChannel::GREEN, HistogramProvider::histogramGreen(m_ImageData));
+  m_Histograms.insert(ColorChannel::BLUE,  HistogramProvider::histogramBlue(m_ImageData));
 }

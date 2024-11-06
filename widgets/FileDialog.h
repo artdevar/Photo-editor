@@ -1,18 +1,25 @@
 #ifndef FILEDIALOG_H
 #define FILEDIALOG_H
 
-#include <QObject>
+#include <QString>
+#include <QWidget>
 
-class FileDialog : public QObject
+enum TSaveImageResponse
 {
-    Q_OBJECT
+  Save,
+  DontSave,
+  Cancel
+};
+
+class FileDialog : public QWidget
+{
+  Q_OBJECT
 
 public:
-    FileDialog(QObject * = nullptr);
 
     static QString openFileName();
     static QString safeFileName();
-    static   int   askToSave();
+    static TSaveImageResponse askToSave();
 };
 
 #endif // FILEDIALOG_H
