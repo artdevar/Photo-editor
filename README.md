@@ -1,8 +1,9 @@
-# Photo editor
+# Image editor
 
-**In progress**
+I started this project back in 2019 as a study project. Decided to return to it to not forget how Qt works. There is a chance, that I will continue working on it.
 
-## Few screenshots 
+It requires Qt 6.8 to work.
 
-![screenshot of sample_1](https://i.imgur.com/1lhZOvU.png)
-![screenshot of sample_2](https://i.imgur.com/WCI3nN9.png)
+### Preview:
+
+1. [First demo.](https://youtu.be/oeUlDib5s_k)
